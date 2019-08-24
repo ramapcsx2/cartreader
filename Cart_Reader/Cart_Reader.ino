@@ -441,6 +441,14 @@ void mainMenu() {
    Setup
  *****************************************/
 void setup() {
+  // cartreader CIC initial state
+  // Set cicrstPin(PG1) to Output
+  DDRG |= (1 << 1);
+  // Output a high signal, keeping CIC in reset
+  PORTG |= (1 << 1);
+  // Set cichstPin(PG0) to Input
+  DDRG &= ~(1 << 0);
+  
   // Set Button Pins(PD7, PG2) to Input
   DDRD &= ~(1 << 7);
   DDRG &= ~(1 << 2);

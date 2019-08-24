@@ -275,17 +275,7 @@ void setup_Snes() {
   PORTG |= (1 << 1);
   // Set cichstPin(PG0) to Input
   DDRG &= ~(1 << 0);
-
-  // Adafruit Clock Generator
-  clockgen.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
-  clockgen.set_pll(SI5351_PLL_FIXED, SI5351_PLLA);
-  clockgen.set_pll(SI5351_PLL_FIXED, SI5351_PLLB);
-  clockgen.set_freq(2147727200ULL, SI5351_CLK0);
-  clockgen.set_freq(307200000ULL, SI5351_CLK2);
-  clockgen.output_enable(SI5351_CLK0, 1);
-  clockgen.output_enable(SI5351_CLK1, 0);
-  clockgen.output_enable(SI5351_CLK2, 1);
-
+  
   // Set Address Pins to Output
   //A0-A7
   DDRF = 0xFF;
@@ -338,11 +328,29 @@ void setup_Snes() {
   DDRJ |= (1 << 0);
   //PORTJ &= ~(1 << 0);
 
+  // everything is set up. wait while the capacitors charge
+  delay(1000);
+
+  // Adafruit Clock Generator
+  clockgen.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
+  clockgen.set_pll(SI5351_PLL_FIXED, SI5351_PLLA);
+  clockgen.set_pll(SI5351_PLL_FIXED, SI5351_PLLB);
+  clockgen.set_freq(2147727200ULL, SI5351_CLK0);
+  clockgen.set_freq(307200000ULL, SI5351_CLK2);
+  clockgen.output_enable(SI5351_CLK0, 0);
+  clockgen.output_enable(SI5351_CLK1, 0);
+  clockgen.output_enable(SI5351_CLK2, 1); // output only CIC clock at first
+
   // Start CIC by outputting a low signal to cicrstPin(PG1)
   PORTG  &= ~(1 << 1);
 
   // Wait for CIC reset
-  delay(1000);
+  delay(84);
+  // now freeze CIC comms, SA-1 (if present) should be unlocked
+  clockgen.output_enable(SI5351_CLK2, 0);
+  delay(84);
+  // and run the power hungy addon chips (SA-1, etc)
+  clockgen.output_enable(SI5351_CLK0, 1);
 
   // Print all the info
   getCartInfo_SNES();
